@@ -19,3 +19,5 @@ alias reverse="arg1=\$(ip -f inet addr show tun0 | grep -Po 'inet \K[\d.]+'); pr
 <br>
 <br>
 <b>Please feel free to modify this!</b>
+<br>
+<center>Special thanks to https://github.com/MuirlandOracle for the quirky Bash help! </center> 
